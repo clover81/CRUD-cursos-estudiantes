@@ -90,7 +90,7 @@ export default {
     },
 
     onCoursesUpdated: async function () {
-      // si cambian cursos (crear/editar/borrar), refrescamos ambos
+      // si cambian cursos, recargamos cursos y estudiantes para mantener todo actualizado
       await this.loadCourses();
       await this.loadStudents();
 
@@ -99,7 +99,7 @@ export default {
         this.courseFilter = null;
       }
 
-      // si estabas editando un student y su curso desaparece, lo reseteamos
+      // si estamos editando un estudiante y su curso desaparece, lo reseteamos
       if (this.editing && this.form.course_id != null && !this.courses.some(c => c.id === this.form.course_id)) {
         this.form.course_id = null;
       }

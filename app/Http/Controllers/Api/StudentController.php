@@ -10,7 +10,6 @@ class StudentController extends Controller
 {
     public function index()
     {
-        // Incluye el curso asociado para pintar en Vue
         return response()->json(
             Student::with('course')->orderBy('id', 'desc')->get(),
             200

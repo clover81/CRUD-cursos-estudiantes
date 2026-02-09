@@ -7,6 +7,7 @@
       :form="form"
       :saving="saving"
       :error="error"
+      :fieldErrors="fieldErrors"
       :courses="courses"
       @save="save"
       @reset="resetForm"
@@ -46,6 +47,7 @@ export default {
       editing: false,
       saving: false,
       error: '',
+      fieldErrors: {},
       form: { id: null, name: '', email: '', course_id: null },
     };
   },
@@ -121,6 +123,7 @@ export default {
 
     async save() {
       this.error = '';
+      this.fieldErrors = {};
       if (!this.form.name.trim()) return (this.error = 'El nombre es obligatorio');
       if (!this.form.email.trim()) return (this.error = 'El email es obligatorio');
       if (this.form.course_id == null) return (this.error = 'Debes seleccionar un curso');
@@ -141,9 +144,15 @@ export default {
         });
 
         if (!res.ok) {
-          const data = await res.json().catch(() => null);
-          throw new Error(data?.message || 'Error guardando el estudiante');
+          if (res.status === 422) {
+          const data = await res.json();
+          this.fieldErrors = data.errors || {};
+          return;
         }
+
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.message || 'Error guardando el estudiante');
+    }
 
         this.resetForm();
         await this.loadStudents();

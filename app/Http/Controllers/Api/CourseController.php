@@ -31,8 +31,12 @@ class CourseController extends Controller
 
     public function show(Course $course)
     {
-        return response()->json($course, 200);
+    return response()->json(
+        $course->loadCount('students'),
+        200
+    );
     }
+
 
     public function update(Request $request, Course $course)
     {

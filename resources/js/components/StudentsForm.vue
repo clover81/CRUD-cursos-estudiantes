@@ -3,7 +3,13 @@
     <h3>{{ editing ? 'Editar estudiante' : 'Nuevo estudiante' }}</h3>
 
     <input v-model="localForm.name" class="input" placeholder="Name" />
+    <div class="field-error" v-if="fieldErrors.name">
+     {{ fieldErrors.name[0] }}
+    </div>
     <input v-model="localForm.email" class="input" placeholder="Email" />
+    <div class="field-error" v-if="fieldErrors.email">
+    {{ fieldErrors.email[0] }}
+    </div>
 
     <select v-model.number="localForm.course_id" class="input" :disabled="courses.length === 0">
       <option :value="null" disabled>Selecciona un curso...</option>
@@ -11,6 +17,9 @@
         {{ c.name }}
       </option>
     </select>
+    <div class="field-error" v-if="fieldErrors.course_id">
+     {{ fieldErrors.course_id[0] }}
+    </div>
 
     <div class="actions">
       <button class="btn primary" @click="$emit('save')" :disabled="saving || courses.length === 0">
@@ -34,6 +43,7 @@ export default {
     form: { type: Object, required: true },
     saving: Boolean,
     error: String,
+    fieldErrors: { type: Object, default: () => ({}) },
     courses: { type: Array, required: true },
   },
   computed: {
@@ -54,4 +64,9 @@ export default {
 .error { color: #d1242f; }
 .muted { color: #666; }
 h3 { margin: 0; }
+.field-error {
+  color: #d1242f;
+  font-size: 0.85em;
+}
+
 </style>

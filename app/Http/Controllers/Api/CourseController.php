@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
 
 class CourseController extends Controller
 {
@@ -50,9 +51,25 @@ class CourseController extends Controller
         return response()->json($course, 200);
     }
 
-    public function destroy(Course $course)
-    {
+
+
+public function destroy(Course $course)
+{
+    // Bloqueo a nivel de aplicación: Verificar si el curso tiene estudiantes antes de intentar eliminarlo
+    if ($course->students()->exists()) {
+        return response()->json([
+            'message' => 'No se puede eliminar el curso porque tiene estudiantes asociados.'
+        ], 409);
+    }
+
+    try {
         $course->delete();
         return response()->json(null, 204);
+    } catch (QueryException $e) {
+        // Bloqueo por integridad referencial (por si ocurre igualmente)
+        return response()->json([
+            'message' => 'No se puede eliminar el curso porque tiene estudiantes asociados.'
+        ], 409);
     }
+}
 }

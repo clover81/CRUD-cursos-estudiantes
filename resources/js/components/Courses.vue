@@ -98,23 +98,52 @@ export default {
         this.saving = false;
       }
     },
-    async remove(id) {
-      this.error = '';
-      if (!confirm('¿Eliminar este curso? (Se eliminarán sus estudiantes por cascade)')) return;
+    async remove(courseOrId) {
+  this.error = '';
 
-      try {
-        const res = await fetch(`${this.apiBase}/${id}`, {
-          method: 'DELETE',
-          headers: { Accept: 'application/json' },
-        });
-        if (!res.ok && res.status !== 204) throw new Error('Error eliminando el curso');
+  // Soporta que venga el objeto curso o solo el id
+  const course = (typeof courseOrId === 'object' && courseOrId !== null)
+    ? courseOrId
+    : (this.courses?.find(c => c.id === courseOrId) || { id: courseOrId });
 
-        await this.load();
-        window.dispatchEvent(new Event('courses-updated'));
-        if (this.form.id === id) this.resetForm();
-      } catch (e) {
-        this.error = e.message || 'Error eliminando curso';
-      }
+  const count = course.students_count ?? 0;
+
+  // Bloqueo en UI si tiene alumnos
+  if (count > 0) {
+    alert(`No se puede eliminar. Este curso tiene ${count} estudiante(s).`);
+    return;
+  }
+
+  if (!confirm('¿Eliminar este curso?')) return;
+
+  try {
+    const res = await fetch(`${this.apiBase}/${course.id}`, {
+      method: 'DELETE',
+      headers: { Accept: 'application/json' },
+    });
+
+    // Backend: curso con alumnos -> 409 con mensaje
+    if (res.status === 409) {
+      const data = await res.json().catch(() => null);
+      this.error = data?.message || 'No se puede eliminar el curso porque tiene estudiantes asociados.';
+      return;
+    }
+
+    // Otros errores
+    if (!res.ok && res.status !== 204) {
+      const data = await res.json().catch(() => null);
+      throw new Error(data?.message || 'Error eliminando el curso');
+    }
+
+    // OK
+    await this.load();
+    window.dispatchEvent(new Event('courses-updated'));
+    if (this.form.id === course.id) this.resetForm();
+  } catch (e) {
+    this.error = e.message || 'Error eliminando el curso';
+  }
+
+
     },
   },
   async mounted() {

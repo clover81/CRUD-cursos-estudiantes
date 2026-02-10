@@ -19,7 +19,7 @@
 
         <div class="item-actions">
           <button class="btn" @click="$emit('edit', c)">Editar</button>
-          <button class="btn danger" @click="$emit('remove', c.id)">Eliminar</button>
+          <button class="btn danger" @click="$emit('remove', c)">Eliminar</button>
         </div>
       </li>
     </ul>

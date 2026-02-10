@@ -12,7 +12,7 @@ La aplicación sigue el mismo enfoque visto en clase: **Vue integrado dentro de 
 - Crear cursos
 - Listar cursos
 - Editar cursos
-- Eliminar cursos
+- Eliminar cursos (solo si no tienen estudiantes asociados)
 
 ### Estudiantes
 - Crear estudiantes
@@ -20,10 +20,16 @@ La aplicación sigue el mismo enfoque visto en clase: **Vue integrado dentro de 
 - Editar estudiantes
 - Eliminar estudiantes
 
-### Relación 1:N
-- Cada estudiante pertenece a un curso
+### Relación 1:N y reglas de integridad
+
+- Cada estudiante pertenece obligatoriamente a un curso
 - Selección de curso obligatoria al crear/editar estudiantes
-- Eliminación en cascada de estudiantes al borrar un curso
+- No se permite eliminar un curso que tenga estudiantes asociados
+- La integridad referencial está garantizada tanto en:
+- Base de datos (restricción de clave foránea)
+- Backend (validación en la API)
+- Frontend (bloqueo y mensaje informativo al usuario)
+- Este enfoque evita la pérdida accidental de datos y reproduce el comportamiento habitual en aplicaciones reales.
 
 ---
 
@@ -43,7 +49,7 @@ La aplicación sigue el mismo enfoque visto en clase: **Vue integrado dentro de 
 | id | integer (PK) |
 | name | string |
 | email | string |
-| course_id | foreign key → courses.id |
+| course_id | foreign key → courses.id (RESTRICT) |
 | created_at / updated_at | timestamps |
 
 ---
@@ -56,7 +62,6 @@ La aplicación sigue el mismo enfoque visto en clase: **Vue integrado dentro de 
 - **Vue Router** (SPA)
 - **MySQL**
 - **Fetch API**
-- **Laravel Sail (desarrollo local)**
 
 ---
 
@@ -71,42 +76,42 @@ La aplicación sigue el mismo enfoque visto en clase: **Vue integrado dentro de 
 
 ---
 
-## Instalación en local (Laravel Sail)
+## Instalación en local
 
 ### Clonar el repositorio
 ```bash
-git clone https://github.com/TU_USUARIO/TU_REPO.git
-cd TU_REPO
+git clone https://github.com/clover81/CRUD-cursos-estudiantes.git
+cd CRUD-cursos-estudiantes
 ```
 
-## Instalar dependencias PHP
+## Instalar dependencias backend
 
 `composer install`
-
-## Levantar el entorno con Sail
-
-`./vendor/bin/sail up -d`
 
 ## Configurar el entorno
 
 ```bash
 cp .env.example .env
-./vendor/bin/sail artisan key:generate
+php artisan key:generate
 ```
 
 ## Migraciones y seeders
 
-`./vendor/bin/sail artisan migrate:fresh --seed`
+`php artisan migrate:fresh --seed`
 
-## Instalar dependencias frontend
+## Instalación frontend (Vite)
 ```bash
-./vendor/bin/sail npm install
-./vendor/bin/sail npm run dev
+npm install
+npm run dev
 ```
+
+## En otra terminal
+
+`php artisan serve`
 
 ## Aplicación disponible en:
 
-`http://localhost`
+`http://127.0.0.1:8000`
 
 ## Endpoints API
 
@@ -119,6 +124,7 @@ POST /api/courses
 PUT /api/courses/{id}
 
 DELETE /api/courses/{id}
+ - Devuelve 409 Conflict si el curso tiene estudiantes asociados
 
 Estudiantes
 
@@ -156,3 +162,7 @@ La aplicación está preparada para desplegarse en un servidor Linux (Apache + P
 permisos de storage/ y bootstrap/cache
 
 configuración del servidor apuntando a /public
+
+## Nota técnica
+
+El borrado de cursos está protegido para evitar pérdidas de datos, aplicando buenas prácticas de integridad referencial y control de errores en todas las capas de la aplicación.
